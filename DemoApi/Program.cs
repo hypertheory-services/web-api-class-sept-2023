@@ -25,6 +25,7 @@ app.UseAuthorization();
 // this looks at all of our controllers, reads the routing attributes, and creates a "lookup table" so that
 // when requests come in, they can be sent to the right code to process that request.
 app.MapControllers();
+// IF I get GET for /blog/int/int/int -> InfoController -> GetBlog
 
 //app.MapGet("/info", () =>
 //{
