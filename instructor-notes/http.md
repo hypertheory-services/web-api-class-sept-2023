@@ -9,6 +9,10 @@
 - Query String
 - Headers
 
+- WE can also send data in the "body" of the request IF
+the request is either a POST or a PUT request 
+(GET, and DELETE should not have a body)
+
 ## Types of Resources
 
 ### Collection
