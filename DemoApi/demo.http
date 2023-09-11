@@ -10,3 +10,15 @@ GET http://localhost:1337/colors?color=Magenta
 
 ### 
 GET http://localhost:1337/employees?department=dev
+
+
+###
+POST http://localhost:1337/bug-reports
+Content-Type: application/json
+
+{
+  "application": "Visual Studio 2022",
+  "isue": "Couldn't see the Controllers folder",
+  "pririty": 99
+}
+

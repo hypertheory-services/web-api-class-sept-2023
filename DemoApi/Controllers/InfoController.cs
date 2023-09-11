@@ -12,7 +12,7 @@ public class InfoController : ControllerBase
 
     // GET /blog/2023/9/11
     [HttpGet("/blog/{year:int:min(2005)}/{month:int:min(1):max(12)}/{day:int}")]
-    public async Task<ActionResult> GetTheBlogStuff(int year, int month, int day)
+    public async Task<ActionResult> GetTheBlogStuff([FromRoute]int year, int month, int day)
     {
         if(month == 2 && day > 29)
         {
@@ -50,8 +50,22 @@ public class InfoController : ControllerBase
     {
         return Ok($"You are running {userAgent} and you think tacos are {tacos}");
     }
+
+    [HttpPost("/bug-reports")]
+    public async Task<ActionResult> AddBugReport([FromBody] CreateBugReportRequest request)
+    {
+        return Ok(request);
+    }
 }
 
 
 public record ResponseType<T>(T data, string Filter);
 public record Employee(string Name, string Department);
+
+public record CreateBugReportRequest
+{
+    public string Application { get; set; } = string.Empty;
+    public string Issue { get; set; } = string.Empty;
+
+    public int Priority { get; set; }
+}
