@@ -17,6 +17,8 @@ builder.Services.AddDbContext<EmployeesDataContext>(options =>
     options.UseNpgsql(connectionString);
 });
 
+// When it goes to create our EmployeesController, it needs something that can manage employees.
+builder.Services.AddScoped<IManageEmployees, EfEmployeeManager>();
 
 var app = builder.Build();
 
