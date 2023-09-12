@@ -9,4 +9,5 @@ public class EmployeesDataContext : DbContext
     }
 
     public  DbSet<EmployeeEntity> Employees { get; set; }
+    public DbSet<CandidateEntity> Candidates { get; set; }
 }
