@@ -12,9 +12,16 @@ public class EfEmployeeManager : IManageEmployees
         _dataContext = dataContext;
     }
 
-    public async Task<EmployeeSummaryListResponse> GetAllEmployeesAsync()
+    public async Task<EmployeeSummaryListResponse> GetAllEmployeesAsync(string department)
     {
-        var employees = await _dataContext.Employees
+
+        var employees = GetEmployees();
+        if(department != "All")
+        {
+            employees = employees.Where(e => e.Department == department);
+        }
+        var result = await employees
+            // IF department isn't "All", only select those employees where department == deparment.
             .Select(emp => new EmployeeSummaryListItemResponse
             {
                 Id = emp.Id.ToString(),
@@ -23,12 +30,37 @@ public class EfEmployeeManager : IManageEmployees
                 Department = emp.Department,
                 EmailAddress = emp.EmailAddress,
             })
-            .ToListAsync();
+            .ToListAsync(); // "Non-Deferred Operator"
+
 
         var response = new EmployeeSummaryListResponse
         {
-            Employees = employees
+            Employees = result,
+            ShowingDepartment = department
         };
         return response;
+    }
+
+    public async Task<EmployeeDetailsItemResponse?> GetEmployeeByIdAsync(string id)
+    {
+        if (int.TryParse(id, out var convertedId)) {
+            return await GetEmployees()
+                .Where(e => e.Id == convertedId)
+                .Select(emp => new EmployeeDetailsItemResponse
+                {
+                    Id = emp.Id.ToString(),
+                    Department = emp.Department,
+                    EmailAddress = emp.EmailAddress,
+                    FirstName = emp.FirstName,
+                    LastName = emp.LastName,
+                    PhoneNumber = emp.PhoneNumber,
+                }).SingleOrDefaultAsync();
+
+            } return null;
+    }
+
+    private IQueryable<EmployeeEntity> GetEmployees()
+    {
+        return _dataContext.Employees;
     }
 }

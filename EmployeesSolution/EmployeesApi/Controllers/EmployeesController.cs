@@ -15,17 +15,23 @@ public class EmployeesController : ControllerBase
     }
 
     [HttpGet("/employees")]
-    public async Task<ActionResult<EmployeeSummaryListResponse>> GetAllEmployees()
+    public async Task<ActionResult<EmployeeSummaryListResponse>> GetAllEmployees([FromQuery] string department = "All")
     {
-
-        // "Write the Code You Wish You Had"
-        EmployeeSummaryListResponse response = await _employeeManager.GetAllEmployeesAsync();
+        EmployeeSummaryListResponse response = await _employeeManager.GetAllEmployeesAsync(department);
         return Ok(response);
     }
 
     [HttpGet("/employees/{id}")]
     public async Task<ActionResult<EmployeeDetailsItemResponse>> GetAnEmployee(string id)
     {
-        return Ok();
+        EmployeeDetailsItemResponse? response = await _employeeManager.GetEmployeeByIdAsync(id);
+       
+        if(response is null)
+        {
+            return NotFound();
+        } else
+        {
+            return Ok(response);
+        }
     }
 }
