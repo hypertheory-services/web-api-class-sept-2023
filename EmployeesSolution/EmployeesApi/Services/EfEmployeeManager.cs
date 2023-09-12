@@ -1,4 +1,6 @@
-﻿using EmployeesApi.Data;
+﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using EmployeesApi.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace EmployeesApi.Services;
@@ -6,30 +8,27 @@ namespace EmployeesApi.Services;
 public class EfEmployeeManager : IManageEmployees
 {
     private readonly EmployeesDataContext _dataContext;
+    private readonly IMapper _mapper;
+    private readonly MapperConfiguration _mapperConfig;
 
-    public EfEmployeeManager(EmployeesDataContext dataContext)
+    public EfEmployeeManager(EmployeesDataContext dataContext, IMapper mapper, MapperConfiguration mapperConfig)
     {
         _dataContext = dataContext;
+        _mapper = mapper;
+        _mapperConfig = mapperConfig;
     }
 
     public async Task<EmployeeSummaryListResponse> GetAllEmployeesAsync(string department)
     {
 
         var employees = GetEmployees();
-        if(department != "All")
+        if (department != "All")
         {
             employees = employees.Where(e => e.Department == department);
         }
         var result = await employees
             // Given I have an EmployeeEntity -> EmployeeSummaryListItemResponse
-            .Select(emp => new EmployeeSummaryListItemResponse
-            {
-                Id = emp.Id.ToString(),
-                FirstName = emp.FirstName,
-                LastName = emp.LastName,
-                Department = emp.Department,
-                EmailAddress = emp.EmailAddress,
-            })
+            .ProjectTo<EmployeeSummaryListItemResponse>(_mapperConfig)
             .ToListAsync(); // "Non-Deferred Operator"
 
 
@@ -43,20 +42,15 @@ public class EfEmployeeManager : IManageEmployees
 
     public async Task<EmployeeDetailsItemResponse?> GetEmployeeByIdAsync(string id)
     {
-        if (int.TryParse(id, out var convertedId)) {
+        if (int.TryParse(id, out var convertedId))
+        {
             return await GetEmployees()
                 .Where(e => e.Id == convertedId)
-                .Select(emp => new EmployeeDetailsItemResponse
-                {
-                    Id = emp.Id.ToString(),
-                    Department = emp.Department,
-                    EmailAddress = emp.EmailAddress,
-                    FirstName = emp.FirstName,
-                    LastName = emp.LastName,
-                    PhoneNumber = emp.PhoneNumber,
-                }).SingleOrDefaultAsync();
+                .ProjectTo<EmployeeDetailsItemResponse>(_mapperConfig)
+                .SingleOrDefaultAsync();
 
-            } return null;
+        }
+        return null;
     }
 
     private IQueryable<EmployeeEntity> GetEmployees()
