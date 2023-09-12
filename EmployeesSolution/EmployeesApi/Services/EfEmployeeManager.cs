@@ -21,7 +21,7 @@ public class EfEmployeeManager : IManageEmployees
             employees = employees.Where(e => e.Department == department);
         }
         var result = await employees
-            // IF department isn't "All", only select those employees where department == deparment.
+            // Given I have an EmployeeEntity -> EmployeeSummaryListItemResponse
             .Select(emp => new EmployeeSummaryListItemResponse
             {
                 Id = emp.Id.ToString(),
