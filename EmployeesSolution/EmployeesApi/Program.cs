@@ -1,4 +1,5 @@
 using EmployeesApi;
+using EmployeesApi.ApiAdapters;
 using EmployeesApi.Data;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
@@ -23,10 +24,18 @@ builder.Services.AddDbContext<EmployeesDataContext>(options =>
     options.UseNpgsql(connectionString);
 });
 
+
 // When it goes to create our EmployeesController, it needs something that can manage employees.
 builder.Services.AddScoped<IManageEmployees, EfEmployeeManager>();
 builder.Services.AddScoped<IManageCandidates, EfCandidatesManager>();
-builder.Services.AddScoped<IProvideTheTelecomApi, DummyTelecomApi>();
+
+var teleComApiUri = builder.Configuration.GetValue<string>("telecom-api") ?? throw new Exception("Need the telecom api url");
+builder.Services.AddHttpClient<IProvideTheTelecomApi, TelecomApiAdapter>(client =>
+{
+    client.BaseAddress = new Uri(teleComApiUri);
+    client.DefaultRequestHeaders.UserAgent.Clear();
+    client.DefaultRequestHeaders.Add("User-Agent", "EmployeesApi");
+});
 
 
 // 120ms
