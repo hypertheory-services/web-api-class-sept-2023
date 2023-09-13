@@ -26,6 +26,7 @@ builder.Services.AddDbContext<EmployeesDataContext>(options =>
 // When it goes to create our EmployeesController, it needs something that can manage employees.
 builder.Services.AddScoped<IManageEmployees, EfEmployeeManager>();
 builder.Services.AddScoped<IManageCandidates, EfCandidatesManager>();
+builder.Services.AddScoped<IProvideTheTelecomApi, DummyTelecomApi>();
 
 
 // 120ms

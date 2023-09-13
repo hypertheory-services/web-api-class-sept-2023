@@ -35,12 +35,12 @@ public class EfCandidatesManager : IManageCandidates
         _context.Candidates.Add(candidate);
         await _context.SaveChangesAsync();
         return _mapper.Map<CandidateResponseModel>(candidate);
- 
+
     }
 
     public async Task<CandidateResponseModel?> GetCandidateByIdAsync(string id)
     {
-        if(int.TryParse(id, out var candidateId))
+        if (int.TryParse(id, out var candidateId))
         {
             return await _context.Candidates.Where(c => c.Id == candidateId)
                 .ProjectTo<CandidateResponseModel>(_mapperConfig)
@@ -49,71 +49,65 @@ public class EfCandidatesManager : IManageCandidates
         return null;
     }
 
-    public async Task<CandidateHiringResponse> HireCandidateAsync(string department,DepartmentHiringRequest request)
+    public async Task<CandidateHiringResponse> HireCandidateAsync(string department, DepartmentHiringRequest request)
     {
+        int candidateId = -11;
+        
+        
 
-        if (int.TryParse(request.CandidateId, out var candidateId))
+        if (!int.TryParse(request.CandidateId, out candidateId))
         {
-            // 2. Validate that
-            //    - Does the Department exist?
-            var departmentExists = _departments.Any(d => d == department.ToLowerInvariant());
-            if (!departmentExists)
-            { 
-                return new CandidateHiringResponse { DepartmentNotFound = true };
-            }// the department isn't found.
-            //    - Is the salary >= minSalary
-            var candidate = await _context.Candidates
-                .Where(c => c.Id == candidateId && c.Status == CandidateStatus.AwaitingManager)
-              
-                .SingleOrDefaultAsync();
-
-            if(candidate is null)
-            {
-                return new CandidateHiringResponse { CandidateNotAvailable = true }; // this time it means there is no candidate that matches the criteria (has the id, and is in the right "state")
-            }
-
-            if(candidate.RequiredSalaryMin < request.StartingSalary)
-            {
-                return new CandidateHiringResponse {  IncorrectSalaryOffered = true };
-            }
-
-
-            // 3. We need to an email address and a phone number for them?
-            EmployeeContactMechanismsResponse phoneAndEmailAssignment = await _telecomApi.GetPhoneAndEmailAssignmentAsync(candidate.FirstName, candidate.LastName);
-            // 4. We need to update their candidate resource to change their status AND
-            candidate.Status = CandidateStatus.Hired;
-            //    We need to add them as an employee.
-            var newEmployee = new EmployeeEntity
-            {
-                Department = department,
-                EmailAddress = phoneAndEmailAssignment.Email,
-                PhoneNumber = phoneAndEmailAssignment.PhoneNumber,
-                FirstName = candidate.FirstName,
-                LastName = candidate.LastName,
-                Salary = request.StartingSalary!.Value
-            };
-            _context.Employees.Add(newEmployee);
-            await _context.SaveChangesAsync();
-            // 5. Send a response ??
-            //
-            return new CandidateHiringResponse
-            {
-                Candidate = new CandidateResponseModel
-                {
-                    // TODO: Add the employee stuff and all that here. Maybe Automapper.
-                }
-            };
-
+            return new CandidateHiringResponse.CandidateNotAvailable();
         }
-        return null; // kind of overusing null here. there is no candidate with that id?
+        
+        var departmentExists = _departments.Any(d => d == department.ToLowerInvariant());
+        if (!departmentExists)
+        {
+            return new CandidateHiringResponse.DepartmentNotFound();
+        }
+        var candidate = await _context.Candidates
+            .Where(c => c.Id == candidateId && c.Status == CandidateStatus.AwaitingManager)
+            .SingleOrDefaultAsync();
+
+        if (candidate is null)
+        {
+            return new CandidateHiringResponse.CandidateNotAvailable();
+        }
+
+        if (candidate.RequiredSalaryMin > request.StartingSalary)
+        {
+            return new CandidateHiringResponse.IncorrectSalaryOffered();
+        }
+
+        EmployeeContactMechanismsResponse phoneAndEmailAssignment = await _telecomApi.GetPhoneAndEmailAssignmentAsync(candidate.FirstName, candidate.LastName);
+        candidate.Status = CandidateStatus.Hired;
+        var newEmployee = new EmployeeEntity
+        {
+            Department = department,
+            EmailAddress = phoneAndEmailAssignment.Email,
+            PhoneNumber = phoneAndEmailAssignment.PhoneNumber,
+            FirstName = candidate.FirstName,
+            LastName = candidate.LastName,
+            Salary = request.StartingSalary!.Value
+        };
+        _context.Employees.Add(newEmployee);
+        await _context.SaveChangesAsync();
+
+
+        return new CandidateHiringResponse.CandidateHired(_mapper.Map<CandidateResponseModel>(candidate));
+     
+
+
     }
 }
 
-public record CandidateHiringResponse
+public abstract record CandidateHiringResponse
 {
-    public bool DepartmentNotFound { get; set; } = false;
-    public bool CandidateNotAvailable { get; set; } = false;
-    public bool IncorrectSalaryOffered { get; set; } = false;
-    public CandidateResponseModel? Candidate { get; set; }
+  
+
+    public record DepartmentNotFound : CandidateHiringResponse { }
+    public record CandidateNotAvailable : CandidateHiringResponse { }
+    public record IncorrectSalaryOffered : CandidateHiringResponse { }
+    public record CandidateHired(CandidateResponseModel response) : CandidateHiringResponse { }
 
 }
