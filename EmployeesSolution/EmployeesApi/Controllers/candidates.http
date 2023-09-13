@@ -1,0 +1,13 @@
+# For more info on HTTP files go to https://aka.ms/vs/httpfile
+
+POST http://localhost:1338/candidates
+Content-Type: application/json 
+
+{
+    "firstName": "Jill",
+    "lastName": "Jones",
+    "requiredSalaryMin": 100000,
+    "phoneNumber": "555-1212",
+    "emailAddress": "mary@compuserve.com",
+    "notes": "This is a super great developer. She knows C#, and F#"
+}
