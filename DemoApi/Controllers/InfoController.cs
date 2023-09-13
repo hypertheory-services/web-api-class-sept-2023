@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
 
 namespace DemoApi.Controllers;
 
@@ -64,6 +65,9 @@ public record Employee(string Name, string Department);
 
 public record CreateBugReportRequest
 {
+
+    [Required]
+    public string YourEmail { get; set; } = string.Empty;
     public string Application { get; set; } = string.Empty;
     public string Issue { get; set; } = string.Empty;
 
