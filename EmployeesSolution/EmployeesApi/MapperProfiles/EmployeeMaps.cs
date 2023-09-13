@@ -13,5 +13,7 @@ public class EmployeeMaps : Profile
 
         CreateMap<EmployeeEntity, EmployeeDetailsItemResponse>()
             .ForMember(dest => dest.Id, opts => opts.MapFrom(src => src.Id.ToString()));
+
+        CreateMap<EmployeeEntity, CandidateResponseModel>();
     }
 }

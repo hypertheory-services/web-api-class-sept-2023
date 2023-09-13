@@ -1,4 +1,6 @@
-﻿namespace EmployeesApi.Controllers;
+﻿using System.Reflection.Metadata.Ecma335;
+
+namespace EmployeesApi.Controllers;
 
 [ApiController]
 public class DepartmentsController : ControllerBase
@@ -13,13 +15,17 @@ public class DepartmentsController : ControllerBase
     [HttpPost("/departments/{department}/hiring-requests")]
     public async Task<ActionResult<CandidateResponseModel>> CreateHiringRequest([FromBody] DepartmentHiringRequest request, string department)
     {
-        CandidateResponseModel? response = await _candidateManager.HireCandidateAsync(department, request);
-        return Ok();
+        var response = await _candidateManager.HireCandidateAsync(department, request);
+
+
+        return response switch
+        {
+            CandidateHiringResponse.CandidateNotAvailable => NotFound("Candidate not available"),
+            CandidateHiringResponse.DepartmentNotFound => NotFound("Department not found"),
+            CandidateHiringResponse.IncorrectSalaryOffered => BadRequest("Did not match Salary Requirement"),
+            CandidateHiringResponse.CandidateHired c => Ok(c.response),
+            _ => BadRequest() // unhandled case?
+        }; ;
     }
-    //[HttpPost("/departments/dev/hiring-requests")]
-    //public async Task<ActionResult<CandidateResponseModel>> CreateHiringRequest([FromBody] DepartmentHiringRequest request)
-    //{
-    //    CandidateResponseModel? response = await _candidateManager.HireCandidateAsync("dev", request);
-    //    return Ok();
-    //}
 }
+

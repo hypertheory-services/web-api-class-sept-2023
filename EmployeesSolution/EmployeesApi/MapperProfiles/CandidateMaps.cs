@@ -15,6 +15,8 @@ public class CandidateMaps : Profile
 
         CreateMap<CandidateEntity, CandidateResponseModel>()
             .ForMember(dest => dest.Id, opts => opts.MapFrom(src => src.Id.ToString()));
+
+        
     }
 }
 
