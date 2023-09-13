@@ -74,7 +74,7 @@ public class EfCandidatesManager : IManageCandidates
             return new CandidateHiringResponse.CandidateNotAvailable();
         }
 
-        if (candidate.RequiredSalaryMin > request.StartingSalary)
+        if (candidate.RequiredSalaryMin >= request.StartingSalary)
         {
             return new CandidateHiringResponse.IncorrectSalaryOffered();
         }
@@ -96,18 +96,13 @@ public class EfCandidatesManager : IManageCandidates
 
         return new CandidateHiringResponse.CandidateHired(_mapper.Map<CandidateResponseModel>(candidate));
      
-
-
     }
 }
 
 public abstract record CandidateHiringResponse
 {
-  
-
     public record DepartmentNotFound : CandidateHiringResponse { }
     public record CandidateNotAvailable : CandidateHiringResponse { }
     public record IncorrectSalaryOffered : CandidateHiringResponse { }
     public record CandidateHired(CandidateResponseModel response) : CandidateHiringResponse { }
-
 }

@@ -25,7 +25,7 @@ public class DepartmentsController : ControllerBase
             CandidateHiringResponse.IncorrectSalaryOffered => BadRequest("Did not match Salary Requirement"),
             CandidateHiringResponse.CandidateHired c => Ok(c.response),
             _ => BadRequest() // unhandled case?
-        }; ;
+        }; 
     }
 }
 
