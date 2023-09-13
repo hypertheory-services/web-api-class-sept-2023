@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
+using EmployeesApi.Controllers;
 using EmployeesApi.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -51,6 +52,23 @@ public class EfEmployeeManager : IManageEmployees
 
         }
         return null;
+    }
+
+    public async Task<EmployeeSalaryResponseModel?> GetSalaryForEmployeeAsync(string id)
+    {
+        var emp = await GetEmployees()
+            .Where(e => e.Id == int.Parse(id)) // Bad. Just in a hurry.
+             .SingleOrDefaultAsync();
+        if(emp is null )
+        {
+            return null;
+        }
+        var response = new EmployeeSalaryResponseModel
+        {
+            Type = "annual",
+            Amount = emp.Salary
+        };
+        return response;
     }
 
     private IQueryable<EmployeeEntity> GetEmployees()

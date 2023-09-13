@@ -34,4 +34,23 @@ public class EmployeesController : ControllerBase
             return Ok(response);
         }
     }
+
+    [HttpGet("/employees/{id}/salary")]
+    public async Task<ActionResult> GetEmployeesSalaryAsync([FromRoute] string id)
+    {
+        EmployeeSalaryResponseModel? response =await  _employeeManager.GetSalaryForEmployeeAsync(id);
+        if(response is null )
+        {
+            return NotFound();
+        } else
+        {
+            return Ok(response);
+        }
+    }
+}
+
+public record EmployeeSalaryResponseModel
+{
+    public decimal Amount { get; set; }
+    public string Type { get; set; } = string.Empty;
 }
